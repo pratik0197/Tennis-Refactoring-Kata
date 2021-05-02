@@ -38,7 +38,6 @@ namespace Tennis
         private string NonEqualNonThresholdResults()
         {
             var score = "";
-            var tempScore = 0;
             ScoreManager manager = new ScoreManager();
             manager.ScoreStrategy = GetStrategy(firstPlayerScore);
             score = manager.Score;
@@ -79,34 +78,33 @@ namespace Tennis
         {
             string score;
             var scoreDifference = firstPlayerScore - secondPlayerScore;
-            if (scoreDifference == 1) score = "Advantage player1";
-            else if (scoreDifference == -1) score = "Advantage player2";
-            else if (scoreDifference >= 2) score = "Win for player1";
-            else score = "Win for player2";
-            return score;
+
+            if (scoreDifference == 1) return GetResult(Results.Advantage,player1Name);
+            else if (scoreDifference == -1) return GetResult(Results.Advantage,player2Name);
+            else if (scoreDifference >= 2) return GetResult(Results.Win,player1Name);
+            return GetResult(Results.Win, player2Name);
         }
 
+        private string GetResult(string result, string playerName)
+        {
+            return $"{result} {playerName}";
+        }
+
+        private static class Results
+        {
+            public static string Advantage = "Advantage";
+            public static string Win = "Win for";
+        }
+
+            
         private string EqualScoreResult()
         {
             string score;
-            switch (firstPlayerScore)
-            {
-                case 0:
-                    score = "Love-All";
-                    break;
-                case 1:
-                    score = "Fifteen-All";
-                    break;
-                case 2:
-                    score = "Thirty-All";
-                    break;
-                default:
-                    score = "Deuce";
-                    break;
-
-            }
-
-            return score;
+            ScoreManager manager = new ScoreManager();
+            manager.ScoreStrategy = GetStrategy(firstPlayerScore);
+            if (manager.ScoreStrategy == null)
+                return "Deuce";
+            return $"{manager.Score}-All";
         }
     }
 }
