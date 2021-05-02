@@ -2,10 +2,10 @@ namespace Tennis
 {
     class TennisGame1 : ITennisGame
     {
-        private int m_score1 = 0;
-        private int m_score2 = 0;
-        private string player1Name;
-        private string player2Name;
+        private int firstPlayerScore = 0;
+        private int secondPlayerScore = 0;
+        private readonly string player1Name;
+        private readonly string player2Name;
 
         public TennisGame1(string player1Name, string player2Name)
         {
@@ -16,65 +16,96 @@ namespace Tennis
         public void WonPoint(string playerName)
         {
             if (playerName == "player1")
-                m_score1 += 1;
+                firstPlayerScore += 1;
             else
-                m_score2 += 1;
+                secondPlayerScore += 1;
         }
 
         public string GetScore()
         {
-            string score = "";
-            var tempScore = 0;
-            if (m_score1 == m_score2)
+            if (EqualScores())
             {
-                switch (m_score1)
-                {
-                    case 0:
-                        score = "Love-All";
-                        break;
-                    case 1:
-                        score = "Fifteen-All";
-                        break;
-                    case 2:
-                        score = "Thirty-All";
-                        break;
-                    default:
-                        score = "Deuce";
-                        break;
+                return EqualScoreResult();
+            }
+            else if (ThresholdScores())
+            {
+                return ThresholdScoreResult();
+            }
 
-                }
-            }
-            else if (m_score1 >= 4 || m_score2 >= 4)
+            return NonEqualNonThresholdResults();
+        }
+
+        private string NonEqualNonThresholdResults()
+        {
+            var score = "";
+            var tempScore = 0;
+            ScoreManager manager = new ScoreManager();
+            manager.ScoreStrategy = GetStrategy(firstPlayerScore);
+            score = manager.Score;
+            score += "-";
+            manager.ScoreStrategy = GetStrategy(secondPlayerScore);
+            score += manager.Score;
+            return score;
+        }
+
+        private IScoreStrategy? GetStrategy(int firstPlayerScore)
+        {
+            switch (firstPlayerScore)
             {
-                var minusResult = m_score1 - m_score2;
-                if (minusResult == 1) score = "Advantage player1";
-                else if (minusResult == -1) score = "Advantage player2";
-                else if (minusResult >= 2) score = "Win for player1";
-                else score = "Win for player2";
+                case 0:
+                    return new ZeroScore();
+                case 1:
+                    return new OneScore();
+                case 2:
+                    return new TwoScore();
+                case 3:
+                    return new ThreeScore();
+                default:
+                    return null;
             }
-            else
+        }
+
+        private bool ThresholdScores()
+        {
+            return firstPlayerScore >= 4 || secondPlayerScore >= 4;
+        }
+
+        private bool EqualScores()
+        {
+            return firstPlayerScore == secondPlayerScore;
+        }
+
+        private string ThresholdScoreResult()
+        {
+            string score;
+            var scoreDifference = firstPlayerScore - secondPlayerScore;
+            if (scoreDifference == 1) score = "Advantage player1";
+            else if (scoreDifference == -1) score = "Advantage player2";
+            else if (scoreDifference >= 2) score = "Win for player1";
+            else score = "Win for player2";
+            return score;
+        }
+
+        private string EqualScoreResult()
+        {
+            string score;
+            switch (firstPlayerScore)
             {
-                for (var i = 1; i < 3; i++)
-                {
-                    if (i == 1) tempScore = m_score1;
-                    else { score += "-"; tempScore = m_score2; }
-                    switch (tempScore)
-                    {
-                        case 0:
-                            score += "Love";
-                            break;
-                        case 1:
-                            score += "Fifteen";
-                            break;
-                        case 2:
-                            score += "Thirty";
-                            break;
-                        case 3:
-                            score += "Forty";
-                            break;
-                    }
-                }
+                case 0:
+                    score = "Love-All";
+                    break;
+                case 1:
+                    score = "Fifteen-All";
+                    break;
+                case 2:
+                    score = "Thirty-All";
+                    break;
+                default:
+                    score = "Deuce";
+                    break;
+
             }
+
             return score;
         }
     }
